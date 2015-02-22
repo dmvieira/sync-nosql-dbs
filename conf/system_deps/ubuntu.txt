@@ -1,0 +1,5 @@
+python-pip
+make
+oracle-java8-installer
+dsc21
+elasticsearch

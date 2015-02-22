@@ -1,0 +1,20 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  config.vm.box = "ubuntu14.04"
+  config.vm.box_url = "https://cloud-images.ubuntu.com/vagrant/trusty/current/trusty-server-cloudimg-amd64-vagrant-disk1.box"
+  config.vm.network "forwarded_port", guest: 9160, host: 9160 # cassandra port
+  config.vm.network "forwarded_port", guest: 9200, host: 9200 # elasticsearch port
+  config.vm.synced_folder "../", "/opt/website", group: 'www-data', owner:'www-data'
+  config.vm.provision "shell", inline: "cd /opt/website/vagrant/; bash configure;"
+  config.exec.commands '*', directory: '/opt/website', prepend: 'sudo'
+  config.vm.provider :virtualbox do |vbox, override|
+    vbox.memory = 1024
+  end
+
+end

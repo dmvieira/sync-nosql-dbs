@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+# Bash script for configuration at Ubuntu systems.
+# installs cassandra, elasticsearch, java, pip, make and pip requirements.
+# This adds environment variables for db connections if needs (if not in environment yet).
+# Each process will be described below.
+
+# Get my current dir to clarify vars.
+MY_DIR="$(pwd)";
+
+# Choose deps file for installation
+DEPS_FILE=$MY_DIR/conf/system_deps/ubuntu.txt
+
+
+# function to export env_vars to env_vars.mk file. 
+# If the variable is not defined in environment, then define default
+function export_env_vars {
+    # $1 = env var name
+    # $2 = default value
+    if [ ${!1} ]; then
+        tmp_var=${!1};
+    else
+        tmp_var=${tmp_var:-$2};
+    fi
+    echo "export $1=${tmp_var}" >> env_vars.mk;
+    unset tmp_var;
+
+}
+
+# function that install all ubuntu deps
+function install_deps {
+    sudo apt-get update;
+    while read dep; do
+        echo "Installing $dep";
+        sudo apt-get install $dep -y;
+    done < $DEPS_FILE
+
+}
+
+
+# Now starts pip installation. No need for user only or virtualenv installation;
+# Install make for futher use;
+# Starts  installation and configuration;
+# Installs nginx reverse proxy server;
+# Installs apache server.
+
+# Set PROD_ENV for vagrant and for real prod env
+if ! [ $PROD_ENV ]; then
+    sudo apt-get install make virtualbox vagrant -y;
+    # Installs plugin for exec commands 
+    vagrant plugin install vagrant-exec; 
+    make vagrant;
+    exit;
+fi
+
+# Change system timezone. It should work only in Brazil, right?
+echo "Changing system timezone to Brazil";
+sudo ln -sf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime;
+
+# Adding apt sources
+echo "Adding apt repositories";
+sudo apt-get install curl;
+
+# Auto accepting java license and adding repo
+echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections;
+sudo add-apt-repository ppa:webupd8team/java;
+
+# Gettings apt sources using this tutorial addapted: https://gist.github.com/hengxin/8e5040d7a8b354b1c82e
+echo "deb http://debian.datastax.com/community stable main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list;
+curl -L http://debian.datastax.com/debian/repo_key | sudo apt-key add -;
+
+# Add ppa key and repo for elasticsearch using: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/setup-repositories.html
+wget -qO - https://packages.elasticsearch.org/GPG-KEY-elasticsearch | sudo apt-key add -
+sudo add-apt-repository "deb http://packages.elasticsearch.org/elasticsearch/1.4/debian stable main"
+
+# Installing system deps
+install_deps;
+
+# Setting autostart for elasticsearch
+sudo update-rc.d elasticsearch defaults 95 10
+
+# Installing pip requirements. You should use a virtualenv
+echo "Installing pip requirements"
+sudo pip install -r requirements.txt;

@@ -1,0 +1,8 @@
+# python stuff
+*.pyc
+
+# linux recover files
+*~
+
+# pycharm stuff
+.idea/

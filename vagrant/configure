@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# Configure file to vagrant box. Execute normal configure and bit more
+# configuration adding prod_env for vagrant
+
+cd ../;
+
+export PROD_ENV=1; # simulate prod env inside vagrant
+
+bash configure;
