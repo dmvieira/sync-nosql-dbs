@@ -1,5 +1,4 @@
 python-pip
 make
-oracle-java8-installer
-dsc21
+oracle-java7-installer
 elasticsearch

@@ -65,10 +65,6 @@ sudo apt-get install curl;
 echo oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | sudo /usr/bin/debconf-set-selections;
 sudo add-apt-repository ppa:webupd8team/java;
 
-# Gettings apt sources using this tutorial addapted: https://gist.github.com/hengxin/8e5040d7a8b354b1c82e
-echo "deb http://debian.datastax.com/community stable main" | sudo tee -a /etc/apt/sources.list.d/cassandra.sources.list;
-curl -L http://debian.datastax.com/debian/repo_key | sudo apt-key add -;
-
 # Add ppa key and repo for elasticsearch using: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/setup-repositories.html
 wget -qO - https://packages.elasticsearch.org/GPG-KEY-elasticsearch | sudo apt-key add -
 sudo add-apt-repository "deb http://packages.elasticsearch.org/elasticsearch/1.4/debian stable main"
@@ -76,8 +72,25 @@ sudo add-apt-repository "deb http://packages.elasticsearch.org/elasticsearch/1.4
 # Installing system deps
 install_deps;
 
-# Setting autostart for elasticsearch
-sudo update-rc.d elasticsearch defaults 95 10
+# Installing cassandra manually because deb don't work.
+# Following this tutorial: https://www.digitalocean.com/community/tutorials/how-to-install-cassandra-and-run-a-single-node-cluster-on-a-ubuntu-vps
+wget http://ftp.unicamp.br/pub/apache/cassandra/2.0.12/apache-cassandra-2.0.12-bin.tar.gz;
+tar -xvzf apache-cassandra-2.0.12-bin.tar.gz;
+rm apache-cassandra-2.0.12-bin.tar.gz;
+mv apache-cassandra-2.0.12 /opt/cassandra;
+sudo mkdir /var/lib/cassandra;
+sudo mkdir /var/log/cassandra;
+sudo chown -R $USER:$GROUP /var/lib/cassandra;
+sudo chown -R $USER:$GROUP /var/log/cassandra;
+export CASSANDRA_HOME=/opt/cassandra;
+export PATH=$PATH:$CASSANDRA_HOME/bin;
+echo "PATH=$PATH" > /etc/environment;
+echo "CASSANDRA_HOME=$CASSANDRA_HOME" >> /etc/environment;
+sudo cassandra;
+
+# Setting autostart for elasticsearch and cassandra
+sudo update-rc.d elasticsearch defaults 95 10;
+sudo update-rc.d cassandra defaults;
 
 # Installing pip requirements. You should use a virtualenv
 echo "Installing pip requirements"
