@@ -95,3 +95,7 @@ sudo update-rc.d cassandra defaults;
 # Installing pip requirements. You should use a virtualenv
 echo "Installing pip requirements"
 sudo pip install -r requirements.txt;
+
+# Copy configuration file to etc/sync-nosql-dbs
+echo "Copying app's configuration files"
+sudo cp -R $MY_DIR/conf/sync-nosql-dbs /etc/

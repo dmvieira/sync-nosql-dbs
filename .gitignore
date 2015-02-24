@@ -6,3 +6,6 @@
 
 # pycharm stuff
 .idea/
+
+# vagrant stuff
+.vagrant/
